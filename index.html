@@ -2,7 +2,7 @@
 <html lang="zh">
   <head>
     <meta charset="UTF-8" />
-    <title>amis demo</title>
+    <title>Mysql 7 Parser</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta
       name="viewport"
@@ -29,92 +29,113 @@
   <body>
     <div id="root" class="app-wrapper"></div>
     <script src="sdk.js"></script>
+    <script src="dist/sql/sqlParser.js"></script>
     <script type="text/javascript">
+      var global = {};
       (function () {
         let amis = amisRequire('amis/embed');
         // 通过替换下面这个配置来生成不同页面
         let amisJSON = {
-    "$schema": "https://houtai.baidu.com/v2/schemas/page.json#",
-    "type": "page",
-    "title": "hihuman tools",
-    "initApi": "https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/initData?id=${id}",
-    "aside": {
-      "type": "wrapper",
-      "size": "xs",
-      "className": "",
-      "body": {
-        "type": "nav",
-        "stacked": true,
-        "links": [
-          {
-            "label": "sql parse tree",
-            "to": "?id=1"
-          },
-          {
-            "label": "json pretty",
-            "to": "?id=2"
-          }
-        ]
-      }
-    },
-    "body": [
+  "type": "app",
+  "brandName": "HumanTools",
+  "pages": [
+    {
+        "children": [
+        {
+            "label":"sql parse tree",
+            "url":"/index.html",
+            "isDefaultPage":true,
+            "schema": {
+                "type": "page",
+                "body": [
         {
           "type": "form",
-          "api": "https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/saveForm?waitSeconds=2",
+          "name":"form1",
+          "api": "",
           "title":"",
           "mode": "normal",
+          "wrapWithPanel":false,
           "controls": [
               {
                     "type": "textarea",
-                    "name": "textarea",
+                    "name": "sql",
                     "label": "",
-                    "id":"id_sql",
+                    "className":"class_sql",
                     "value":"",
-                    "placeholder": "select * from student",
+                    "placeholder": "select * from student where id=202105160001",
               },
               {
-              "type": "submit",
-              "label": "登录"
+                type: 'custom',
+                label: '',
+                name : "actionParseSql",
+                onUpdate: (dom, data, prevData, props) => {
+                      console.log('data', data, prevData);
+                      // to global data
+                      global['data'] = data['sql'];
+                },
+                onMount: (dom, data, onChange, props) => {
+                  const button = document.createElement('button');
+                  button.innerText = 'Parser';
+                  button.onclick = event => {
+                    onChange('new name');
+                    var sqlParser = window.sqlParser;
+
+                    // get global data
+                    var v = global['data'];
+                    var ast = sqlParser.parse(v);
+                    var after_format_json=JSON.stringify(ast, null, 2);
+                    console.log(v,after_format_json);
+                    props.onAction(
+                        event,
+                        {
+                          "type": "action",
+                          "actionType": "reload",
+                          "label": "刷新目标组件",
+                          "target": "form2?format-json=${after_format_json}"
+                        }, // action
+                        {"after_format_json":after_format_json} // data
+                      );
+                    event.preventDefault();
+                  };
+                  dom.appendChild(button);
+                }
               },
-              {
-                "type": "divider"
-              },
-              {
-                "type": "json-editor",
-                "name": "json",
-                "value": "{\n    \"a\": 1,\n    \"b\": [\n        1,\n        2,\n        3\n    ]\n}",
-                "id":"format_tree_sql"
-              }
             ]
         },
         {
-            "type": "form",
-            "api": "https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/saveForm?waitSeconds=2",
-            "title": "json pretty",
-            "mode": "horizontal",
-            "autoFocus": true,
-            "controls": [
-              {
-                    "type": "json-editor",
-                    "name": "json",
-                    "label": "",
-                    "id":"id_json",
-                    "value":"{\n    \"a\": 1,\n    \"b\": [\n        1,\n        2,\n        3\n    ]\n}"
-              },
+          "type": "form",
+          "name":"form2",
+          "api": "https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/saveForm?waitSeconds=2",
+          "title":"",
+          "mode": "normal",
+          "wrapWithPanel":false,
+          "controls": [
               {
                 "type": "divider"
               },
               {
                 "type": "json-editor",
-                "name": "json",
-                "value": "{\n    \"a\": 1,\n    \"b\": [\n        1,\n        2,\n        3\n    ]\n}",
-                "label": "Json Editor",
-                "id":"format_sql"
+                "name": "format-json",
+                "value":'{"nodeType":"Main","value":{"type":"Select","distinctOpt":null,"highPriorityOpt":null,"maxStateMentTimeOpt":null,"straightJoinOpt":null,"sqlSmallResultOpt":null,"sqlBigResultOpt":null,"sqlBufferResultOpt":null,"sqlCacheOpt":null,"sqlCalcFoundRowsOpt":null,"selectItems":{"type":"SelectExpr","value":[{"type":"Identifier","value":"*"}]},"from":{"type":"TableReferences","value":[{"type":"TableReference","value":{"type":"TableFactor","value":{"type":"Identifier","value":"user"},"partition":null,"alias":null,"hasAs":null,"indexHintOpt":null}}]},"partition":null,"where":{"type":"ComparisonBooleanPrimary","left":{"type":"Identifier","value":"id"},"operator":"=","right":{"type":"Number","value":"202105160001"}},"groupBy":null,"having":null,"orderBy":null,"limit":null,"procedure":null,"updateLockMode":null},"hasSemicolon":false}',
+                "className":"class_format_tree_sql"
               }
             ]
-        }
+        },
     ]
-  };
+              }
+            }
+        ]
+    },
+    {
+        "children": [
+            {
+                "label":"format json",
+                "url":"/format_json.html",
+            }
+        ]
+    }
+  ]
+};
         let amisScoped = amis.embed('#root', amisJSON);
       })();
     </script>
