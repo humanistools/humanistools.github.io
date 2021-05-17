@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>amis demo</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link rel="stylesheet" href="sdk.css" />
+    <link rel="stylesheet" href="helper.css" />
+    <!-- 从 1.1.0 开始 sdk.css 将不支持 IE 11，如果要支持 IE11 请引用这个 css，并把前面那个删了 -->
+    <!-- <link rel="stylesheet" href="sdk-ie11.css" /> -->
+    <!-- 不过 amis 开发团队几乎没测试过 IE 11 下的效果，所以可能有细节功能用不了，如果发现请报 issue -->
+    <style>
+      html,
+      body,
+      .app-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="app-wrapper"></div>
+    <script src="sdk.js"></script>
+    <script type="text/javascript">
+      (function () {
+        let amis = amisRequire('amis/embed');
+        // 通过替换下面这个配置来生成不同页面
+        let amisJSON = {
+    "$schema": "https://houtai.baidu.com/v2/schemas/page.json#",
+    "type": "page",
+    "title": "hihuman tools",
+    "initApi": "https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/initData?id=${id}",
+    "aside": {
+      "type": "wrapper",
+      "size": "xs",
+      "className": "",
+      "body": {
+        "type": "nav",
+        "stacked": true,
+        "links": [
+          {
+            "label": "sql parse tree",
+            "to": "?id=1"
+          },
+          {
+            "label": "json pretty",
+            "to": "?id=2"
+          }
+        ]
+      }
+    },
+    "body": [
+        {
+          "type": "form",
+          "api": "https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/form/saveForm?waitSeconds=2",
+          "title":"",
+          "mode": "normal",
+          "controls": [
+              {
+                    "type": "textarea",
+                    "name": "textarea",
+                    "label": "",
+                    "id":"id_sql",
+                    "value":"",
+                    "placeholder": "select * from student",
+              },
+              {
+              "type": "submit",
+              "label": "登录"
+              },
+              {
+                "type": "divider"
+              },
+              {
+                "type": "json-editor",
+                "name": "json",
+                "value": "{\n    \"a\": 1,\n    \"b\": [\n        1,\n        2,\n        3\n    ]\n}",
+                "id":"format_tree_sql"
+              }
+            ]
+        },
+        {
+            "type": "form",
+            "api": "https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/saveForm?waitSeconds=2",
+            "title": "json pretty",
+            "mode": "horizontal",
+            "autoFocus": true,
+            "controls": [
+              {
+                    "type": "json-editor",
+                    "name": "json",
+                    "label": "",
+                    "id":"id_json",
+                    "value":"{\n    \"a\": 1,\n    \"b\": [\n        1,\n        2,\n        3\n    ]\n}"
+              },
+              {
+                "type": "divider"
+              },
+              {
+                "type": "json-editor",
+                "name": "json",
+                "value": "{\n    \"a\": 1,\n    \"b\": [\n        1,\n        2,\n        3\n    ]\n}",
+                "label": "Json Editor",
+                "id":"format_sql"
+              }
+            ]
+        }
+    ]
+  };
+        let amisScoped = amis.embed('#root', amisJSON);
+      })();
+    </script>
+  </body>
+</html>

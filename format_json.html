@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Format JSON</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link rel="stylesheet" href="sdk.css" />
+    <link rel="stylesheet" href="helper.css" />
+    <!-- 从 1.1.0 开始 sdk.css 将不支持 IE 11，如果要支持 IE11 请引用这个 css，并把前面那个删了 -->
+    <!-- <link rel="stylesheet" href="sdk-ie11.css" /> -->
+    <!-- 不过 amis 开发团队几乎没测试过 IE 11 下的效果，所以可能有细节功能用不了，如果发现请报 issue -->
+    <style>
+      html,
+      body,
+      .app-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="app-wrapper"></div>
+    <script src="sdk.js"></script>
+    <script type="text/javascript">
+      var global = {};
+      (function () {
+      
+        let amis = amisRequire('amis/embed');
+        // 通过替换下面这个配置来生成不同页面
+        let amisJSON = {
+  "type": "app",
+  "brandName": "HumanTools",
+  "pages": [
+    {
+        "children": [
+        {
+            "label":"sql parse tree",
+            "url":"/sql_parse_tree.html"
+        }
+        ]
+    },
+    {
+        "children": [
+            {
+                "label":"format json",
+                "url":"/format_json.html",
+                "isDefaultPage":true,
+                "schema": {
+                    "type": "page",
+                    "body": [
+        {
+            "type": "form",
+            "name":"form1",
+            "api": "",
+            "title": "json pretty",
+            "mode": "normal",
+            "autoFocus": true,
+            "wrapWithPanel":false,
+            "controls": [
+              {
+                    "type": "json-editor",
+                    "name": "json",
+                    "label": "",
+                    "className":"class_json",
+                    "value":"{\n    \"id\": 1,\n    \"name\":\"web\", \n    \"parentId\": [\n        1,\n        2,\n        3\n    ]\n}"
+              },
+              {
+                type: 'custom',
+                label: '',
+                name : "actionFormat",
+                onUpdate: (dom, data, prevData, props) => {
+                      console.log('data', data, prevData);
+                      // to global data
+                      global['data'] = data['json'];
+                },
+                onMount: (dom, data, onChange, props) => {
+                  const button = document.createElement('button');
+                  button.innerText = 'Format';
+                  button.onclick = event => {
+                    onChange('new name');
+                    // get global data
+                    var v = global['data'];
+                    var obj = Function('"use strict";return (' + v + ')')();
+                    var after_format_json=JSON.stringify(obj, null, 2);
+                    console.log(v,after_format_json);
+                    props.onAction(
+                        event,
+                        {
+                          "type": "action",
+                          "actionType": "reload",
+                          "label": "刷新目标组件",
+                          "target": "form2?format-json=${after_format_json}"
+                        }, // action
+                        {"after_format_json":after_format_json} // data
+                      );
+                    event.preventDefault();
+                  };
+                  dom.appendChild(button);
+                }
+              }
+            ]
+        },
+        {
+            "type": "form",
+            "api": "https://3xsw4ap8wah59.cfc-execute.bj.baidubce.com/api/amis-mock/mock2/saveForm?waitSeconds=2",
+            "title": "json pretty",
+            "mode": "normal",
+            "name": "form2",
+            "autoFocus": true,
+            "wrapWithPanel":false,
+            "controls": [
+              {
+                "type": "divider"
+              },
+              {
+                "type": "json-editor",  
+                "name": "format-json",
+                "value": "{\n    \"id\": 1,\n    \"name\":\"web\", \n    \"parentId\": [\n        1,\n        2,\n        3\n    ]\n}",
+                "className":"class_format_sql"
+              }
+            ]
+        }
+        
+    ]
+                }
+            }
+        ]
+    }
+  ]
+};
+        let amisScoped = amis.embed('#root', amisJSON);
+      })();
+    </script>
+  </body>
+</html>
